@@ -1,0 +1,102 @@
+diff --git a/client/src/components/Addresses/AddressDetail.js b/client/src/components/Addresses/AddressDetail.js
+index 5b6f1e2..15f9ecf 100644
+--- a/client/src/components/Addresses/AddressDetail.js
++++ b/client/src/components/Addresses/AddressDetail.js
+@@ -59,7 +59,7 @@ ListsForAddress.propTypes = {
+ 
+ export const AddressDetail = () => {
+   const [requestStatus, setRequestStatus] = useState("none");
+-  const { value, lists } = useSelector(state => state.address);
++  const { value, lists, testnet } = useSelector(state => state.address);
+   const dispatch = useDispatch();
+   const setNotification = message => dispatch(setNotificationAction(message));
+ 
+@@ -79,12 +79,18 @@ export const AddressDetail = () => {
+ 
+   const submitDisabled = () => requestStatus === "pending";
+ 
++  const listsLabel = lists.length !== 1 ? "lists" : "list";
++
+   return (
+     <Grid container direction="column" spacing={2}>
+       <Grid item>
+         <Card>
+           <CardContent>
+             <Typography variant="h5">{value}</Typography>
++            <Typography>{testnet ? "Testnet" : "Mainnet"}</Typography>
++            <Typography>
++              {lists.length} {listsLabel}
++            </Typography>
+           </CardContent>
+           <CardActions>
+             <Button
+diff --git a/client/src/components/Addresses/AddressDetail.test.js b/client/src/components/Addresses/AddressDetail.test.js
+index ab75ac4..4924605 100644
+--- a/client/src/components/Addresses/AddressDetail.test.js
++++ b/client/src/components/Addresses/AddressDetail.test.js
+@@ -22,6 +22,8 @@ describe("AddressDetail", () => {
+     ],
+   };
+ 
++  const testnetAddress = { ...address, testnet: true };
++
+   test("it renders the address", () => {
+     renderWithStore(
+       <MemoryRouter>
+@@ -30,11 +32,22 @@ describe("AddressDetail", () => {
+       { initialState: { address } }
+     );
+     expect(screen.getByText("1abc")).toBeInTheDocument();
++    expect(screen.getByText("Mainnet")).toBeInTheDocument();
+     expect(screen.getByText("List 1")).toBeInTheDocument();
+     expect(screen.getByText("List 2")).toBeInTheDocument();
+     expect(screen.getByText("Delete Address")).toBeInTheDocument();
+   });
+ 
++  test("it renders the testnet address", () => {
++    renderWithStore(
++      <MemoryRouter>
++        <AddressDetail />
++      </MemoryRouter>,
++      { initialState: { address: testnetAddress } }
++    );
++    expect(screen.getByText("Testnet")).toBeInTheDocument();
++  });
++
+   describe("clicking the 'Delete Address' button", () => {
+     let deleteButton;
+     const mockAPIDelete = jest.spyOn(API, "Delete");
+diff --git a/client/src/components/Lists/ListDetail.js b/client/src/components/Lists/ListDetail.js
+index 1a53ef2..9fe2f88 100644
+--- a/client/src/components/Lists/ListDetail.js
++++ b/client/src/components/Lists/ListDetail.js
+@@ -79,12 +79,17 @@ export const ListDetail = () => {
+ 
+   const submitDisabled = () => requestStatus === "pending";
+ 
++  const aLabel = addresses.length !== 1 ? "adresses" : "adress";
++
+   return (
+     <Grid container direction="column" spacing={2}>
+       <Grid item>
+         <Card>
+           <CardContent>
+             <Typography variant="h5">{name}</Typography>
++            <Typography>
++              {addresses.length} {aLabel}
++            </Typography>
+           </CardContent>
+           <CardActions>
+             <Button
+diff --git a/client/src/components/Lists/ListDetail.test.js b/client/src/components/Lists/ListDetail.test.js
+index c1dc816..7814191 100644
+--- a/client/src/components/Lists/ListDetail.test.js
++++ b/client/src/components/Lists/ListDetail.test.js
+@@ -30,6 +30,7 @@ describe("ListDetail", () => {
+       { initialState: { list } }
+     );
+     expect(screen.getByText("list1")).toBeInTheDocument();
++    expect(screen.getByText("2 adresses")).toBeInTheDocument();
+     expect(screen.getByText("addr1")).toBeInTheDocument();
+     expect(screen.getByText("addr2")).toBeInTheDocument();
+     expect(screen.getByText("Delete List")).toBeInTheDocument();
